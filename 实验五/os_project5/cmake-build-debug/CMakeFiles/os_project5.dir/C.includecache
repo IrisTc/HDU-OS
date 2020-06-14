@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+G:/os_project5/fileSys.c
+fileSys.h
+G:/os_project5/fileSys.h
+
+G:/os_project5/fileSys.h
+malloc.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+time.h
+-
+
+G:/os_project5/main.c
+fileSys.c
+G:/os_project5/fileSys.c
+
