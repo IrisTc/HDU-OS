@@ -21,6 +21,8 @@ string.h
 -
 time.h
 -
+ctype.h
+-
 
 G:/os_project5/main.c
 fileSys.c

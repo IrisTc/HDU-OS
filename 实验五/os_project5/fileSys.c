@@ -136,7 +136,7 @@ void my_mkdir(char *dirname){
         }
     }
 
-    //申请一个打开目录表项
+    //申请一个空闲的打开目录表项
     int fd = get_free_filelist();
     if(fd == -1){
         printf("File number has reached the limit\n");
@@ -164,6 +164,7 @@ void my_mkdir(char *dirname){
     }
     filelist[currfd].pos = i * sizeof(fcb);
     filelist[currfd].fcbstate = 1;
+
     //初始化该fcb
     fcb *fcbtmp = (fcb*)malloc(sizeof(fcb));
     fcbtmp->attribute = ATTR_DIR;
@@ -426,7 +427,7 @@ int my_create(char *filename){
     fat1[block_num].id = END;
     memcpy(fat2, fat1, BLOCKSIZE*2);
 
-    //修改当前打开文件表项信息
+    //修改文件信息
     strcpy(fcbptr->filename, filename);
     time_t rawtime = time(NULL);
     struct tm* time = localtime(&rawtime);
@@ -517,7 +518,7 @@ void my_rm(char *filename){
     filelist[currfd].fcbstate = 1;
 }
 
-int my_open(char *filename){
+int my_open(char *filename)   {
     //读当前打开目录文件表项到内存
     char buf[MAXREADSIZE];
     filelist[currfd].pos = 0;
@@ -594,21 +595,23 @@ int my_write(int fd) {
         printf("File not exist");
         return -1;
     }
-    int wstyle;
+    char wstyle[10];
+    int style;
     while (1) {
         printf("1: truncate write  2: overwrite  3:append write\n");
-        scanf("%d", &wstyle);
-        if (wstyle > 3 || wstyle < 1) {
-            printf("mode wrong, please input again\n");
-        } else {
+        gets(wstyle);
+        style = atoi(wstyle);
+
+        if(style == 1 || style == 2 || style == 3){
             break;
+        } else {
+            printf("mode wrong, please input again\n");
         }
     }
 
     char text[MAXREADSIZE] = "";
     char line[MAXREADSIZE] = "";
     printf("Please enter the file content, if finished please input \":wq\" in new line\n");
-    getchar();
     while (gets(line)) {
         if (strcmp(line, ":wq") == 0) {
             break;
@@ -618,7 +621,7 @@ int my_write(int fd) {
     }
 
     text[strlen(text)] = '\0';
-    do_write(fd, text, strlen(text) + 1, wstyle);
+    do_write(fd, text, strlen(text) + 1, style);
     filelist[fd].fcbstate = 1;
     return 0;
 }
@@ -639,8 +642,10 @@ int do_write(int fd, char *text, int len, char wstyle){
     if (wstyle == 1){  //清空从头开始写
         filelist[fd].pos = 0;
         filelist[fd].length = 0;
-    }else if (wstyle == 3){  //追加写，指针移到末尾
-        filelist[fd].pos = filelist[fd].length;
+    }else {//追加写，指针移到末尾
+        if(wstyle == 3){
+            filelist[fd].pos = filelist[fd].length;
+        }
         if(filelist[fd].attribute == ATTR_FILE){
             if(filelist[fd].length!=0){
                 filelist[fd].pos = filelist[fd].length -1; //去掉末尾\0
@@ -811,7 +816,7 @@ int get_free_block(){
     return -1;
 }
 
-//申请空闲文件目录
+//申请空闲文件目录表项
 int get_free_filelist(){
     for(int i=0; i<MAXOPENFILE; i++){
         if(filelist[i].topenfile == 0){
